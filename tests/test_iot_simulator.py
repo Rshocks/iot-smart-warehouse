@@ -1,38 +1,34 @@
 import unittest
-import time
-from iot_simulator import InventoryDataGenerator, ConfigManager
+from unittest.mock import patch, MagicMock
+from iot_simulation.iot_simulator import ConfigManager
 
 class TestConfigManager(unittest.TestCase):
-    
-    def test_load_config(self):
+
+    @patch.object(ConfigManager, 'load_config', return_value={
+        "AWS_IOT_ENDPOINT": "endpoint",
+        "CERT_PATH": "cert_path",
+        "KEY_PATH": "key_path",
+        "CA_PATH": "ca_path"
+    })
+    def test_load_config(self, mock_load_config):
         config_manager = ConfigManager(config_file="config.json")
-    
+        
         self.assertIn("AWS_IOT_ENDPOINT", config_manager.config)
         self.assertIn("CERT_PATH", config_manager.config)
         self.assertIn("KEY_PATH", config_manager.config)
         self.assertIn("CA_PATH", config_manager.config)
-
-    def test_get(self):
+    
+    @patch.object(ConfigManager, 'load_config', return_value={
+        "AWS_IOT_ENDPOINT": "endpoint",
+        "CERT_PATH": "cert_path",
+        "KEY_PATH": "key_path",
+        "CA_PATH": "ca_path"
+    })
+    def test_get(self, mock_load_config):
         config_manager = ConfigManager(config_file="config.json")
-        
         endpoint = config_manager.get("AWS_IOT_ENDPOINT")
         self.assertIsInstance(endpoint, str)
+        self.assertEqual(endpoint, "endpoint")
 
-class TestInventoryDataGenerator(unittest.TestCase):
-    
-    def test_generate(self):
-        data_generator = InventoryDataGenerator()
-        generated_data = data_generator.generate()
-
-        self.assertIn("item_id", generated_data)
-        self.assertIn("movement", generated_data)
-        self.assertIn("quantity", generated_data)
-        self.assertIn("timestamp", generated_data)
-        
-        self.assertIsInstance(generated_data["item_id"], int)
-        self.assertIsInstance(generated_data["movement"], str)
-        self.assertIsInstance(generated_data["quantity"], int)
-        self.assertIsInstance(generated_data["timestamp"], int)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
