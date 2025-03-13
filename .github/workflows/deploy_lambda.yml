@@ -1,9 +1,9 @@
-name: Deploy to AWS Lambda
+name: Deploy and Test AWS Lambda 
 
 on:
   push:
     branches:
-      - main  # Trigger when you push to the 'main' branch
+      - main  # Trigger this action when you push to the 'main' branch
 
 jobs:
   deploy:
@@ -13,24 +13,23 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Zip Lambda function (no dependencies)
-      run: |
-        cd lambda/iot_lambda_func
-        zip -r function.zip inventory_logger.py
-
     - name: Deploy to AWS Lambda
-      uses: aws-actions/aws-lambda-deploy@v1
+      uses: aws-actions/aws-lambda-deploy-python@v1.1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-north-1
         function-name: iot_lambda_func
-        zip-file: lambda/iot_lambda_func/function.zip
+        src-path: lambda/iot_lambda_func/inventory_logger.py
 
-    - name: Trigger Lambda Test Event
-      run: |
-        aws lambda invoke \
-          --function-name iot_lambda_func \
-          --region eu-north-1 \
-          --payload "{\"body\": \"{\\\"item_id\\\": 1, \\\"movement\\\": \\\"TEST\\\", \\\"quantity\\\": 10, \\\"timestamp\\\": \\\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\\\"}\"}" \
-          response.json
+    - name: Test Deployed Lambda Function
+      uses: aws-actions/aws-cli-action@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1
+        command: |
+          aws lambda invoke \
+            --function-name iot_lambda_func \
+            --payload "{\"body\": \"{\\\"item_id\\\": 1, \\\"movement\\\": \\\"TEST\\\", \\\"quantity\\\": 10, \\\"timestamp\\\": \\\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\\"}\"}" \
+            response.json
