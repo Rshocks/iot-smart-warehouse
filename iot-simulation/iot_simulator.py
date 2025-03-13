@@ -1,6 +1,8 @@
 import time
 import json
 import random
+import pytz
+from datetime import datetime
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
 class ConfigManager:
@@ -50,11 +52,15 @@ class IoTClient:
 class InventoryDataGenerator:
     
     def generate(self):
+        dublin_tz = pytz.timezone('Europe/Dublin')
+        current_time = datetime.now(dublin_tz)
+        timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
+        
         return {
             "item_id": random.randint(1000, 9999),
             "movement": random.choice(["IN", "OUT"]),
             "quantity": random.randint(1, 50),
-            "timestamp": int(time.time())
+            "timestamp": timestamp
         }
 
 
