@@ -16,6 +16,7 @@ class DatabaseConnector:
         if not self.db_endpoint:
             raise ValueError('DB_ENDPOINT environment variable is not set.')
 
+        print("Attempting to connect to the database...")
         self.connection = pg8000.connect(
             host=self.db_endpoint,
             database=self.db_name,
@@ -23,11 +24,13 @@ class DatabaseConnector:
             password=self.db_password,
             port=self.db_port
         )
+        print("Database connection established successfully.")
         return self.connection
 
     def close(self):
         if self.connection:
             self.connection.close()
+            print("Database connection closed.")
 
 
 class InventoryLogger:
@@ -40,8 +43,10 @@ class InventoryLogger:
             cursor = conn.cursor()
             insert_query = '''INSERT INTO inventory_logs (item_id, movement, quantity, timestamp) 
                               VALUES (%s, %s, %s, %s);'''
+            print(f"Inserting data: {item_id}, {movement}, {quantity}, {timestamp}")
             cursor.execute(insert_query, (item_id, movement, quantity, timestamp))
             conn.commit()
+            print("Data inserted successfully.")
         finally:
             cursor.close()
             self.db_connector.close()
@@ -51,7 +56,15 @@ class RequestHandler:
     @staticmethod
     def parse_event(event):
         try:
-            payload = json.loads(event['body'])
+            print(f"Incoming event: {json.dumps(event)}")
+
+            if isinstance(event, dict) and 'body' in event:
+                payload = json.loads(event['body'])
+            elif isinstance(event, dict):
+                payload = event
+            else:
+                return None, 'Invalid event format.'
+
             item_id = payload.get('item_id')
             movement = payload.get('movement')
             quantity = payload.get('quantity')
@@ -65,27 +78,36 @@ class RequestHandler:
             return None, f'Invalid data format: {str(e)}'
 
 
+class LambdaService:
+    def __init__(self):
+        self.db_connector = DatabaseConnector()
+        self.inventory_logger = InventoryLogger(self.db_connector)
+
+    def handle_request(self, event):
+        data, error = RequestHandler.parse_event(event)
+        if error:
+            print(f"Error parsing event: {error}")
+            return {
+                'statusCode': 400,
+                'body': json.dumps(error)
+            }
+
+        try:
+            item_id, movement, quantity, timestamp = data
+            self.inventory_logger.log(item_id, movement, quantity, timestamp)
+
+            return {
+                'statusCode': 200,
+                'body': json.dumps('Data stored successfully')
+            }
+        except Exception as e:
+            print(f"Database operation failed: {str(e)}")
+            return {
+                'statusCode': 500,
+                'body': json.dumps(f'Database connection failed: {str(e)}')
+            }
+
+
 def lambda_handler(event, context):
-    db_connector = DatabaseConnector()
-    inventory_logger = InventoryLogger(db_connector)
-
-    data, error = RequestHandler.parse_event(event)
-    if error:
-        return {
-            'statusCode': 400,
-            'body': json.dumps(error)
-        }
-
-    try:
-        item_id, movement, quantity, timestamp = data
-        inventory_logger.log(item_id, movement, quantity, timestamp)
-
-        return {
-            'statusCode': 200,
-            'body': json.dumps('Data stored successfully')
-        }
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps(f'Database connection failed: {str(e)}')
-        }
+    service = LambdaService()
+    return service.handle_request(event)

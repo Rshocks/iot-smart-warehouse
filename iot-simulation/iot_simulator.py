@@ -57,9 +57,9 @@ class InventoryDataGenerator:
         timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
         
         return {
-            "item_id": random.randint(1000, 9999),
+            "item_id": random.randint(1, 200),
             "movement": random.choice(["IN", "OUT"]),
-            "quantity": random.randint(1, 50),
+            "quantity": random.randint(1, 30),
             "timestamp": timestamp
         }
 
