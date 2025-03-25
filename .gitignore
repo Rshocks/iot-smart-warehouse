@@ -2,3 +2,4 @@ config.json
 certificates/
 venv/
 __pycache__
+.env
