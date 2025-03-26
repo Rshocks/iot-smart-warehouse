@@ -1,5 +1,5 @@
 import React from 'react';
-import InventoryData from './components/InventoryData';
+import InventoryData from './components/inventory/InventoryData';
 
 const App = () => {
   return (
