@@ -20,7 +20,7 @@
     text-align: right;
     font-weight: $font-weight-normal;
     font-size: $font-size-small;
-    color: $header-text-color;
+    color: $text-middle-color;
   }
 
   td {
@@ -28,7 +28,7 @@
     text-align: right;
     font-weight: $font-weight-normal-bold;
     font-size: $font-size-medium;
-    color: $data-text-color;
+    color: $text-light-color;
   }
 
   thead {
