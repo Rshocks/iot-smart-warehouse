@@ -1,22 +1,11 @@
-$primary-background-color: #303657;
-$primary-border-color: #3b3f70;
-$header-text-color: #8c94c1;
-$data-text-color: #d1d9f0;
-$hover-background: rgba(255, 255, 255, 0.1);
-
-$font-family: 'Inter', sans-serif;
-$font-weight-normal: 500;
-$font-weight-normal-bold: 525;
-
-$font-size-small: 14px;
-$font-size-medium: 16px;
+@import "../../global_Styles/variables";
 
 .inventory-container {
   font-family: $font-family;
   max-width: 800px;
   margin: 40px auto;
   padding: 20px;
-  background: $primary-background-color;
+  background: $container-background-color;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   color: #ffffff;
@@ -47,7 +36,7 @@ $font-size-medium: 16px;
   }
 
   tbody tr {
-    border-bottom: 1px solid $primary-border-color;
+    border-bottom: 1px solid $container-border-color;
   }
 
   tbody tr:last-child {
